@@ -12,7 +12,7 @@ import java.util.Random;
 public class TripleT {
 
     private int gridSize;
-    private Cell[] board;
+    private Cell[] board; // Yes. This should have been a 2d array.
 
     private State currentState;
     private Player currentPlayer;
@@ -97,25 +97,31 @@ public class TripleT {
 
     private GridIndex computerMove() {
         if (isActive() && currentPlayer == computerPlayer) {
-            List<Integer> openCells = getOpenCells();
-            int index = rand.nextInt(openCells.size());
-            int randomCell = openCells.get(index);
+//            List<Integer> openCells = getOpenCells();
+//            int index = rand.nextInt(openCells.size());
+//            int randomCell = openCells.get(index);
 
-            makeMove(randomCell);
+            int bestCell = getBestMove();
 
-            return new GridIndex(randomCell / gridSize, randomCell % gridSize);
+            makeMove(bestCell);
+
+            return new GridIndex(bestCell / gridSize, bestCell % gridSize);
         }
 
         return null;
     }
 
-    private List<Integer> getOpenCells(){
+    private List<Integer> getOpenCells(Cell[] board){
         List<Integer> openCells = new ArrayList<>(gridSize * gridSize);
         for(int i = 0; i < board.length; i++){
             if (board[i] == Cell.EMPTY)
                 openCells.add(i);
         }
         return openCells;
+    }
+
+    public List<Integer> getOpenCells(){
+        return getOpenCells(board);
     }
 
     private void makeMove(int cell){
@@ -222,12 +228,165 @@ public class TripleT {
         return newBoard;
     }
 
-    // TODO In progress...
+    private int getBestMove(){
+        int bestMoveValue = Integer.MIN_VALUE;
+        int bestMove = -1;
+
+        List<Integer> openCells = getOpenCells();
+        Cell[] boardWithPossibleMove;
+        for (int cell : openCells){
+
+            boardWithPossibleMove = getBoardForMove(board, cell, computerPlayer);
+
+            // We just made the computers move, now it's the opponents turn.
+            int moveValue = minimax(boardWithPossibleMove, 0, false);
+
+            if (moveValue > bestMoveValue){
+                bestMove = cell;
+                bestMoveValue = moveValue;
+            }
+        }
+
+        return bestMove;
+    }
+
+    private int minimax(Cell[] board, int depth, boolean isComputer){
+        int score = score(board);
+
+        if (score == Integer.MAX_VALUE) return score - depth;
+        if (score == Integer.MIN_VALUE) return depth + Integer.MIN_VALUE;
+        if (!hasOpenCells(board)) return 0;
+
+        int best = isComputer ? Integer.MIN_VALUE : Integer.MAX_VALUE;
+        Player nextMovePlayer;
+        if (isComputer){
+            nextMovePlayer = computerPlayer;
+        } else {
+            // Player for next move is the human player
+            nextMovePlayer = computerPlayer == Player.ONE ? Player.TWO : Player.ONE;
+        }
+
+        List<Integer> openCells = getOpenCells(board);
+
+        for (int cell : openCells){
+            Cell[] newBoard = getBoardForMove(board, cell, nextMovePlayer);
+            if (isComputer){
+                best = Math.max(best, minimax(newBoard, depth+1, !isComputer));
+            } else {
+                best = Math.min(best, minimax(newBoard, depth+1, !isComputer));
+            }
+        }
+
+        return best;
+    }
+
+    private boolean hasOpenCells(Cell[] board){
+        for (int i = 0; i < board.length; i++){
+            if (board[i] == Cell.EMPTY) return true;
+        }
+        return false;
+    }
+
+    // TODO This is a lot of duplicated(ish) code. Should probably fix...
     private int score(Cell[] board){
         Cell computerCell = cellForPlayer(computerPlayer);
+        Cell playerCell = computerCell == Cell.X ? Cell.O : Cell.X;
+        int lowScore = Integer.MIN_VALUE;
+        int highScore = Integer.MAX_VALUE;
 
-        return -1;
+        // Horizontal scan
+        Cell prevCell = null;
+        boolean win = false;
+        outerloop:
+        for (int i = 0; i < gridSize * gridSize; i += gridSize){
+            // If the first row does not have N in a row, the loop breaks, ignoring the other N-1 rows.
+            prevCell = null;
+            boolean winInCol = true;
+            for (int j = i; j < i + gridSize; j++){
+                if (prevCell == null) {
+                    prevCell = board[j];
+                } else {
+                    if (prevCell == Cell.EMPTY || prevCell != board[j]) {
+                        winInCol = false;
+                        break;
+                    } else {
+                        prevCell = board[j];
+                    }
+                }
+            }
+            if (winInCol){
+                win = true;
+                break;
+            }
+        }
+        if (win) {
+            //System.out.println("Win Detected!: " + Arrays.toString(board));
+            return prevCell == computerCell ? highScore : lowScore;
+        }
 
+        // Vertical scan
+        win = false;
+        outerloop:
+        for (int i = 0; i < gridSize; i++){
+            prevCell = null;
+            boolean winInRow = true;
+            for (int j = i; j < gridSize * gridSize; j += gridSize){
+                if (prevCell == null) {
+                    prevCell = board[j];
+                } else {
+                    if (prevCell == Cell.EMPTY || prevCell != board[j]) {
+                        winInRow = false;
+                        break;
+                    } else {
+                        prevCell = board[j];
+                    }
+                }
+            }
+            if (winInRow){
+                win = true;
+                break;
+            }
+        }
+        if (win) {
+
+            return prevCell == computerCell ? highScore : lowScore;
+        }
+
+        // Diagonal down right scan
+        prevCell = null;
+        win = true;
+        for (int i = 0; i < gridSize * gridSize; i += gridSize + 1){
+
+            if (prevCell != null && board[i] != prevCell) {
+                win = false;
+                break;
+            } else {
+                prevCell = board[i];
+            }
+
+        }
+        if (win) {
+            return prevCell == computerCell ? highScore : lowScore;
+        }
+
+        // Diagonal down left scan
+        prevCell = null;
+        win = true;
+        for (int i = gridSize - 1; i < gridSize * gridSize - 1; i += gridSize - 1){
+
+            if (prevCell != null && board[i] != prevCell) {
+                win = false;
+                break;
+            } else {
+                prevCell = board[i];
+            }
+
+        }
+        if (win) {
+            return prevCell == computerCell ? highScore : lowScore;
+        }
+
+        return 0;
     }
 
 }
