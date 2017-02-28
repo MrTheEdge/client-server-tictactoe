@@ -1,72 +1,141 @@
 package schroedere1.tictactoe;
 
-import java.util.Scanner;
+import java.io.*;
+import java.net.ServerSocket;
+import java.net.Socket;
 
 /**
  * Created by edge on 2/24/17.
  */
 public class Server {
 
+    private int port;
+    private BufferedReader in;
+    private PrintWriter out;
 
-    public static void printBoard(char[][] board){
-        for (int i = 0; i < board.length; i++){
-            for (int j = 0; j < board[i].length; j++){
-                System.out.print(" " + board[i][j] + " ");
-                if (j < board[i].length - 1){
-                    System.out.print("|");
-                }
-            }
-            System.out.println();
-            if (i < board.length - 1) {
-                System.out.println(new String(new char[3 * 3 + (3 - 1)]).replace("\0", "-"));
-            }
-        }
-        System.out.println();
+    enum MessageType {
+        WIN, TIE, LOSS, DEFAULT
     }
 
-    public static void main(String[] args){
+    public Server(int port){
+        this.port = port;
+    }
 
-        int gridSize = 3;
-        char[][] board = new char[gridSize][gridSize];
+    public void start(){
 
-        for (int i = 0; i < board.length; i++){
-            for (int j = 0; j < board[i].length; j++){
-                board[i][j] = ' ';
+        try (ServerSocket serverSocket = new ServerSocket(port)) {
+
+            while (true){
+                Socket socket = serverSocket.accept();
+                playTicTacToe(socket);
             }
+
+        } catch (IOException ex) {
+            ex.printStackTrace();
         }
 
-        TripleT game = new TripleT(gridSize, false);
-        printBoard(board);
+    }
 
-        Scanner in = new Scanner(System.in);
+    private void playTicTacToe(Socket socket) throws IOException {
+
+        in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        out = new PrintWriter(socket.getOutputStream());
+
+        // 50/50 chance computer goes first
+        boolean isComputerFirst = Math.random() > .5;
+        TripleT game = new TripleT(3, isComputerFirst);
+
+        // If the computer goes first, get it's move and send it.
+        if (isComputerFirst){
+            GridIndex compMove = game.getComputerMove();
+            sendMove(compMove.row, compMove.col, MessageType.DEFAULT);
+        } else {
+            out.println("NONE");
+        }
+
+        GridIndex userMove;
+        GridIndex computerMove;
+        boolean userLastMove = false;
         while (game.isActive()){
 
-            String[] vals = in.nextLine().split(" ");
-            int row = Integer.parseInt(vals[0]);
-            int col = Integer.parseInt(vals[1]);
+            // Get user input
+            boolean isValidMove = false;
+            while (!isValidMove){
+                String line = in.readLine();
+                userMove = parseUserMove(line);
+                if (userMove != null){
+                    isValidMove = game.makeHumanMove(userMove.row, userMove.col);
+                }
+            }
 
-            game.makeHumanMove(row, col);
-            board[row][col] = 'X';
-
+            // Check if that move won the game
             if (!game.isActive()){
-                printBoard(board);
+                if (game.getWinner() == null) // Null means no winner/tie
+                    sendMove(0, 0, MessageType.TIE);
+                else // If it wasnt a tie, the player just won
+                    sendMove(0, 0, MessageType.WIN);
+
                 break;
             }
 
-            GridIndex index = game.getComputerMove();
+            // Get the computer's move
+            computerMove = game.getComputerMove();
+            if (computerMove != null) {
 
-            board[index.row][index.col] = 'O';
+                if (game.isActive()) {
+                    sendMove(computerMove.row, computerMove.col, MessageType.DEFAULT);
+                } else {
+                    if (game.getWinner() == null) // Null means no winner/tie
+                        sendMove(computerMove.row, computerMove.col, MessageType.TIE);
+                    else // It it wasn't a tie, the computer just won.
+                        sendMove(computerMove.row, computerMove.col, MessageType.LOSS);
+                }
 
-            printBoard(board);
-        }
+            } else {
+                System.out.println("You done messed up A-Aron!");
+            }
 
-        if (game.getCurrentState() == TripleT.State.O_WON){
-            System.out.println("O WON!");
-        } else if (game.getCurrentState() == TripleT.State.X_WON){
-            System.out.println("X WON!");
-        } else {
-            System.out.println("THERE WAS A DRAW!");
+            in.close();
+            out.close();
         }
 
     }
+
+    private GridIndex parseUserMove(String input){
+        // Split on a space. "MOVE 2 2"
+        String[] splitMove = input.split(" ");
+
+        // If the message does not match the protocol, return null
+        if (splitMove.length < 3 || splitMove.length > 3) return null;
+        if (!splitMove[0].equals("MOVE")) return null;
+
+        int row, col;
+
+        try {
+
+            row = Integer.parseInt(splitMove[1]);
+            col = Integer.parseInt(splitMove[2]);
+
+        } catch (NumberFormatException ex){
+            // Numbers couldn't be parsed, so return null for invalid input
+            return null;
+        }
+
+        return new GridIndex(row, col);
+
+    }
+
+    private void sendMove(int row, int col, MessageType type) {
+        // MessageType indicates if the message is a WIN/LOSS/TIE or normal move message
+        String suffix = type == MessageType.DEFAULT ? "" : " " + type.toString();
+
+        out.println("MOVE " + row + " " + col + suffix);
+
+    }
+
+    public static void main(String[] args) {
+        Server server = new Server(7788);
+        server.start();
+    }
+
 }

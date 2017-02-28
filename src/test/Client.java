@@ -14,7 +14,7 @@ public class Client {
     public static void main(String[] args) throws IOException {
         String serverAddress = JOptionPane.showInputDialog(
                 "Enter IP Address of a machine that is\n" +
-                        "running the date service on port 9090:");
+                        "running the date service on port 7788:");
         Socket s = new Socket(serverAddress, 7788);
         BufferedReader input = new BufferedReader(new InputStreamReader(s.getInputStream()));
         String answer = input.readLine();

@@ -20,8 +20,6 @@ public class TripleT {
 
     private int moveCount;
 
-    private Random rand = new Random();
-
     enum Cell {
         X, O, EMPTY
     }
@@ -109,6 +107,13 @@ public class TripleT {
         }
 
         return null;
+    }
+
+    public Player getWinner(){
+        if (isActive() || currentState == State.DRAW)
+            return null;
+
+        return currentState == State.X_WON ? Player.ONE : Player.TWO;
     }
 
     private List<Integer> getOpenCells(Cell[] board){
@@ -389,18 +394,4 @@ public class TripleT {
         return 0;
     }
 
-}
-
-/**
- * Simple immutable data class to store an index of a 2D array. Has two publicly accessible
- * integer data members, row and col.
- */
-class GridIndex {
-    final int row;
-    final int col;
-
-    public GridIndex(int row, int col){
-        this.row = row;
-        this.col = col;
-    }
 }
