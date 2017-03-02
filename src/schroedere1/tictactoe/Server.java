@@ -29,7 +29,6 @@ public class Server {
                 Socket socket = serverSocket.accept();
                 playTicTacToe(socket);
             }
-
         } catch (IOException ex) {
             ex.printStackTrace();
         }
@@ -39,7 +38,8 @@ public class Server {
     private void playTicTacToe(Socket socket) throws IOException {
 
         in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        out = new PrintWriter(socket.getOutputStream());
+        out = new PrintWriter(socket.getOutputStream(),true);
+
 
         // 50/50 chance computer goes first
         boolean isComputerFirst = Math.random() > .5;
@@ -57,14 +57,18 @@ public class Server {
         GridIndex computerMove;
         boolean userLastMove = false;
         while (game.isActive()){
-
+            userMove = null;
             // Get user input
             boolean isValidMove = false;
             while (!isValidMove){
                 String line = in.readLine();
                 userMove = parseUserMove(line);
+                System.out.println("user move: " + userMove);
                 if (userMove != null){
                     isValidMove = game.makeHumanMove(userMove.row, userMove.col);
+                }
+                else{
+                    out.println("MOVE -1 -1");
                 }
             }
 
@@ -77,9 +81,9 @@ public class Server {
 
                 break;
             }
-
             // Get the computer's move
             computerMove = game.getComputerMove();
+            System.out.println("user move: " + userMove);
             if (computerMove != null) {
 
                 if (game.isActive()) {
@@ -95,9 +99,9 @@ public class Server {
                 System.out.println("You done messed up A-Aron!");
             }
 
-            in.close();
-            out.close();
         }
+        in.close();
+        out.close();
 
     }
 
@@ -121,6 +125,9 @@ public class Server {
             return null;
         }
 
+        if (row < 0 || row > 2 || col < 0 || col > 2){
+            return null;
+        }
         return new GridIndex(row, col);
 
     }
