@@ -12,6 +12,14 @@ import java.net.Socket;
  */
 public class Client{
 
+    private int port;
+    private char[][] board;
+    int gridSize = 3;
+
+    PrintWriter out;
+    BufferedReader stdInput;
+    BufferedReader input;
+
     public static void printBoard(char[][] board){
         for (int i = 0; i < board.length; i++){
             System.out.print("  " + i + " ");
@@ -36,61 +44,107 @@ public class Client{
         System.out.println();
     }
 
-    public static void main(String[] args) throws IOException{
-        PrintWriter out;
-        BufferedReader stdInput;
-        BufferedReader input;
-        String[] splitMove;
+    public Client(int port){
+        this.port = port;
+    }
 
-        int gridSize = 3;
-        char[][] board = new char[gridSize][gridSize];
+    public void start() {
 
+        board = new char[gridSize][gridSize];
+
+        initBoard(board);
+
+        try(Socket s = new Socket("localhost", this.port))
+        {
+            out = new PrintWriter(s.getOutputStream(),true);
+            stdInput = new BufferedReader(new InputStreamReader(System.in));
+            input = new BufferedReader(new InputStreamReader(s.getInputStream()));
+
+            String userInput;
+
+            // Get the first line from the server
+            String serverLine = input.readLine();
+            if (!serverLine.equals("NONE")) {
+                parseServerInput(serverLine); // Discard returned state, it's the first move
+            }
+            printBoard(board);
+            GameState recievedServerState;
+            while (true) {
+                System.out.print("Enter a move: ");
+                userInput = stdInput.readLine();
+                GridIndex userMove = formatUserInput(userInput);
+                board[userMove.row][userMove.col] = 'O';
+                out.println("MOVE " + userMove.row + " " + userMove.col);
+                printBoard(board); // Possibly remove this first print.
+
+                serverLine = input.readLine();
+                recievedServerState = parseServerInput(serverLine);
+                if (recievedServerState != GameState.RUNNING){
+                    break;
+                }
+                printBoard(board);
+            }
+
+            if (recievedServerState == GameState.COMP_WIN){
+                System.out.println("The computer won!");
+            } else if (recievedServerState == GameState.HUMAN_WIN){
+                System.out.println("You Won!");
+            } else {
+                System.out.println("There was a tie..");
+            }
+
+        }
+        catch (IOException ex) {
+            ex.printStackTrace();
+            System.out.println("Sum ting wong.");
+        }
+    }
+
+    private void initBoard(char[][] board) {
         for (int i = 0; i < board.length; i++){
             for (int j = 0; j < board[i].length; j++){
                 board[i][j] = ' ';
             }
         }
+    }
 
-        try(Socket s = new Socket("localhost", 7788);) //put this in a try catch block!
-        {
-            out = new PrintWriter(s.getOutputStream(),true);
-            stdInput = new BufferedReader(new InputStreamReader(System.in));
-            input = new BufferedReader(new InputStreamReader(s.getInputStream()));
-            String userInput;
-            while (true) {
-                String serverResponse = input.readLine();
-                splitMove = serverResponse.split(" ");
-                if (splitMove[0].equals("MOVE")&& !splitMove[1].equals("-1")) {
-                    board[Integer.parseInt(splitMove[1])][Integer.parseInt(splitMove[2])] = 'X';
-                }
+    public static void main(String[] args) throws IOException{
+        Client client = new Client(7788);
+        client.start();
+    }
 
+    private static GridIndex formatUserInput(String userInput) throws NumberFormatException {
+        String[] splitInput = userInput.trim().split(" ");
 
-                System.out.println(serverResponse);
+        int row = Integer.parseInt(splitInput[0]);
+        int col = Integer.parseInt(splitInput[1]);
 
-                printBoard(board);
+        return new GridIndex(row, col);
+    }
 
-                if(splitMove.length == 4){
-                    break;
-                }
+    private GameState parseServerInput(String input){
+        String[] splitInput = input.split(" ");
 
-                userInput = stdInput.readLine();
-                out.println(userInput);
-                splitMove = userInput.split(" ");
-                if (splitMove[0].equals("MOVE") && !splitMove[1].equals("-1")){
-                    board[Integer.parseInt(splitMove[1])][Integer.parseInt(splitMove[2])] = 'O';
-                }
+        int row = Integer.parseInt(splitInput[1]);
+        int col = Integer.parseInt(splitInput[2]);
 
-            }
-            if (splitMove[3].equals("TIE")){
-                System.out.println("The game ended in a tie");
-            }
-            else if(splitMove[3].equals("LOSS")){
-                System.out.println("You lost to a computer");
-            }
-            else if(splitMove[3].equals("WIN")){
-                System.out.println("You cheated");
-            }
+        board[row][col] = 'X';
+
+        if (splitInput.length > 3){
+            if (splitInput[3].equals("WIN"))
+                return GameState.HUMAN_WIN;
+            if (splitInput[3].equals("LOSS"))
+                return GameState.COMP_WIN;
+
+            return GameState.TIE;
+
+        } else {
+            return GameState.RUNNING;
         }
+    }
+
+    enum GameState {
+        RUNNING, COMP_WIN, HUMAN_WIN, TIE
     }
 
 }

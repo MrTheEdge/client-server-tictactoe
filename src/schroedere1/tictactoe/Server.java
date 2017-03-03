@@ -26,7 +26,9 @@ public class Server {
         try (ServerSocket serverSocket = new ServerSocket(port)) {
 
             while (true){
+                System.out.println("Accepting connections on port " + port);
                 Socket socket = serverSocket.accept();
+                System.out.println("Connected to: " + socket.getInetAddress());
                 playTicTacToe(socket);
             }
         } catch (IOException ex) {
@@ -59,18 +61,21 @@ public class Server {
         while (game.isActive()){
             userMove = null;
             // Get user input
+            /*
+                For now, ignore error checking...
+             */
             boolean isValidMove = false;
-            while (!isValidMove){
-                String line = in.readLine();
-                userMove = parseUserMove(line);
-                System.out.println("user move: " + userMove);
-                if (userMove != null){
-                    isValidMove = game.makeHumanMove(userMove.row, userMove.col);
-                }
-                else{
-                    out.println("MOVE -1 -1");
-                }
+            // while (!isValidMove){
+            String line = in.readLine();
+            userMove = parseUserMove(line);
+            System.out.println("user move: " + userMove);
+            if (userMove != null){
+                isValidMove = game.makeHumanMove(userMove.row, userMove.col);
             }
+            else{
+                out.println("MOVE -1 -1");
+            }
+            // }
 
             // Check if that move won the game
             if (!game.isActive()){
