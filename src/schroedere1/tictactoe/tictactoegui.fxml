@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.shape.Rectangle?>
+
+
+<StackPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="schroedere1.tictactoe.Controller">
+   <children>
+      <Rectangle arcHeight="5.0" arcWidth="5.0" height="600.0" stroke="TRANSPARENT" strokeType="OUTSIDE" translateX="-100.0" width="10.0" />
+      <Rectangle arcHeight="5.0" arcWidth="5.0" height="600.0" stroke="TRANSPARENT" strokeType="OUTSIDE" translateX="100.0" width="10.0" />
+      <Rectangle arcHeight="5.0" arcWidth="5.0" height="10.0" stroke="BLACK" strokeType="INSIDE" translateY="-100.0" width="600.0" />
+      <Rectangle arcHeight="5.0" arcWidth="5.0" height="10.0" stroke="BLACK" strokeType="INSIDE" translateY="100.0" width="600.0" />
+      <ImageView fx:id="grid00" fitHeight="200.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true" translateX="-200.0" translateY="-200.0" />
+      <ImageView fx:id="grid01" fitHeight="200.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true" translateY="-200.0" />
+      <ImageView fx:id="grid02" fitHeight="200.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true" translateX="200.0" translateY="-200.0" />
+      <ImageView fx:id="grid10" fitHeight="200.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true" translateX="-200.0" />
+      <ImageView fx:id="grid11" fitHeight="200.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true" />
+      <ImageView fx:id="grid12" fitHeight="200.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true" translateX="200.0" />
+      <ImageView fx:id="grid20" fitHeight="200.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true" translateX="-200.0" translateY="200.0" />
+      <ImageView fx:id="grid21" fitHeight="200.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true" translateY="200.0" />
+      <ImageView fx:id="grid22" fitHeight="200.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true" translateX="200.0" translateY="200.0" />
+   </children>
+</StackPane>

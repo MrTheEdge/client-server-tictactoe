@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.List;
 
 /**
  * Created by edge on 2/27/17.
@@ -19,6 +20,7 @@ public class Client{
     PrintWriter out;
     BufferedReader stdInput;
     BufferedReader input;
+    List<MoveReceivedEventListener> listeners;
 
     public static void printBoard(char[][] board){
         for (int i = 0; i < board.length; i++){
@@ -75,11 +77,11 @@ public class Client{
                 GridIndex userMove = formatUserInput(userInput);
                 board[userMove.row][userMove.col] = 'O';
                 out.println("MOVE " + userMove.row + " " + userMove.col);
-                printBoard(board); // Possibly remove this first print.
 
                 serverLine = input.readLine();
                 recievedServerState = parseServerInput(serverLine);
                 if (recievedServerState != GameState.RUNNING){
+                    printBoard(board);
                     break;
                 }
                 printBoard(board);
