@@ -67,37 +67,43 @@ public class Client{
             if (!serverLine.equals("NONE")) {
                 parseServerInput(serverLine); // Discard returned state, it's the first move
             }
+
             printBoard(board);
-            GameState recievedServerState;
+            GameState receivedServerState;
             while (true) {
                 System.out.print("Enter a move: ");
                 userInput = stdInput.readLine();
                 GridIndex userMove = formatUserInput(userInput);
                 board[userMove.row][userMove.col] = 'O';
                 out.println("MOVE " + userMove.row + " " + userMove.col);
-                printBoard(board); // Possibly remove this first print.
+                //printBoard(board); // Possibly remove this first print.
 
                 serverLine = input.readLine();
-                recievedServerState = parseServerInput(serverLine);
-                if (recievedServerState != GameState.RUNNING){
+                receivedServerState = parseServerInput(serverLine);
+                if (receivedServerState != GameState.RUNNING){
+                    printBoard(board);
                     break;
                 }
                 printBoard(board);
             }
 
-            if (recievedServerState == GameState.COMP_WIN){
+            if (receivedServerState == GameState.COMP_WIN){
                 System.out.println("The computer won!");
-            } else if (recievedServerState == GameState.HUMAN_WIN){
+            } else if (receivedServerState == GameState.HUMAN_WIN){
                 System.out.println("You Won!");
             } else {
                 System.out.println("There was a tie..");
             }
 
+            input.close();
+            stdInput.close();
+            out.close();
         }
         catch (IOException ex) {
             ex.printStackTrace();
             System.out.println("Sum ting wong.");
         }
+
     }
 
     private void initBoard(char[][] board) {
