@@ -8,7 +8,11 @@ import java.io.PrintWriter;
 import java.net.Socket;
 
 /**
- * Created by edge on 2/27/17.
+ * E.J. Schroeder
+ * Andy Gergel
+ *
+ * Assn #1 - Client-Server TicTacToe
+ * CSC 460
  */
 public class Client{
 

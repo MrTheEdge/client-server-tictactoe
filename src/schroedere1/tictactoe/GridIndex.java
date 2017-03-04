@@ -1,8 +1,13 @@
 package schroedere1.tictactoe;
 
 /**
- * Simple immutable data class to store an index of a 2D array. Has two publicly accessible
- * integer data members, row and col.
+ * E.J. Schroeder
+ * Andy Gergel
+ *
+ * Assn #1 - Client-Server TicTacToe
+ * CSC 460
+ *
+ * Simple immutable data class to store an index of a 2D array.
  */
 class GridIndex {
     final int row;

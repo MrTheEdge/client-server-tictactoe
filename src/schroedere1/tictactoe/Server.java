@@ -5,7 +5,11 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 /**
- * Created by edge on 2/24/17.
+ * E.J. Schroeder
+ * Andy Gergel
+ *
+ * Assn #1 - Client-Server TicTacToe
+ * CSC 460
  */
 public class Server {
 
