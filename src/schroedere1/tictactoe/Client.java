@@ -1,6 +1,5 @@
 package schroedere1.tictactoe;
 
-import javax.swing.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -11,7 +10,7 @@ import java.net.Socket;
  * E.J. Schroeder
  * Andy Gergel
  *
- * Assn #1 - Client-Server TicTacToe
+ * Assn #2 - Client-Server TicTacToe Multithreaded Version
  * CSC 460
  */
 public class Client{

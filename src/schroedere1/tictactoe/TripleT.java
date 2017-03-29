@@ -9,7 +9,7 @@ import java.util.Random;
  * E.J. Schroeder
  * Andy Gergel
  *
- * Assn #1 - Client-Server TicTacToe
+ * Assn #2 - Client-Server TicTacToe Multithreaded Version
  * CSC 460
  */
 

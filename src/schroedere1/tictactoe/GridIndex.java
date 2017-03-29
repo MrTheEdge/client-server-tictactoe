@@ -4,10 +4,9 @@ package schroedere1.tictactoe;
  * E.J. Schroeder
  * Andy Gergel
  *
- * Assn #1 - Client-Server TicTacToe
+ * Assn #2 - Client-Server TicTacToe Multithreaded Version
  * CSC 460
  *
- * Simple immutable data class to store an index of a 2D array.
  */
 class GridIndex {
     final int row;
